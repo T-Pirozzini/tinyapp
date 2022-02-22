@@ -11,11 +11,6 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-// EXAMPLE GET REQUESTS //
-app.get("/", (req, res) => {
-  res.send("Hello!");
-});
-
 // LISTENING ON PORT 8081
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -24,10 +19,6 @@ app.listen(PORT, () => {
 // GET REQUESTS
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
-});
-
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.get("/urls", (req, res) => {
@@ -49,6 +40,7 @@ app.get("/u/:shortURL", (req, res) => {
   res.redirect(longURL);  
 });
 
+// POST REQUESTS
 app.post("/urls", (req, res) => {   
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL 
@@ -56,12 +48,19 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-
 function generateRandomString() {
   return Math.random().toString(36).substring(2, 8); 
 };
 
 
+// EXAMPLE GET REQUESTS //
+// app.get("/", (req, res) => {
+//   res.send("Hello!");
+// });
+
+// app.get("/hello", (req, res) => {
+//   res.send("<html><body>Hello <b>World</b></body></html>\n");
+// });
 
 
 
