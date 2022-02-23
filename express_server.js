@@ -11,10 +11,23 @@ app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// Objects/Database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+const users = {
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
 
 // listening on ${port}
 app.listen(port, () => {
@@ -48,13 +61,31 @@ app.get("/urls", (req, res) => {
 // render urls_new
 app.get("/urls/new", (req, res) => {
   const templateVars = { username: req.cookies["username"] };
-  res.render("urls_new", templateVars);
+  return res.render("urls_new", templateVars);
+});
+
+// register new user/render urls_registration
+app.get("/register", (req, res) => { 
+  const templateVars =  { username: req.cookies["username"] };
+  return res.render("urls_register", templateVars);
+});
+
+// registration endpoint
+app.post("/register", (req, res) => {
+  const id = generateRandomString();
+  users[id] = {
+    id: [id],
+    email: req.body.email,
+    password: req.body.password
+  }  
+  res.cookie("user_id", id);  
+  return res.redirect("/urls");
 });
 
 // render urls show
 app.get("/urls/:shortURL", (req, res) => {  
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
-  res.render("urls_show", templateVars);
+  return res.render("urls_show", templateVars);
 });
 
 // redirect to LongURL after clicking on shortURL
