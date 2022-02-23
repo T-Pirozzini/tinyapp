@@ -8,10 +8,11 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        <form>
+        <form class="form-inline" action="/login" method="POST">
           <input type="text" name="username" placeholder="username">
           <button class="btn-primary">Submit</button>
-        </form>      
+        </form> 
+        <p>`${username} has logged in`</p>            
       </div>   
     </div>
   </nav>

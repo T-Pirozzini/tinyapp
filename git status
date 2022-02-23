@@ -1,0 +1,101 @@
+[33mcommit abe7ce59cdafca2f292d54d9e410038c3f5a26ad[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Wed Feb 23 01:45:58 2022 +0000
+
+    install cookie-parser and add username field
+
+[33mcommit 397ddf140368107f11aae86d57499e64cee9fe7d[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Wed Feb 23 00:45:52 2022 +0000
+
+    add edit url post request
+
+[33mcommit c1c962f339e8e709378ddbc51d1796d01013acaa[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Tue Feb 22 23:39:01 2022 +0000
+
+    add urls_index edit and urls_show new url
+
+[33mcommit fa0a0d56c42d8d71cf83c43043347a7fdc8b056e[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Tue Feb 22 21:15:11 2022 +0000
+
+    install nodemon
+
+[33mcommit 63b147c09e459108afafce04cb42e3fafb4b573a[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Tue Feb 22 04:53:01 2022 +0000
+
+    cleaned up/reorganized code
+
+[33mcommit 0c3e94ad25a7c8b221f6b7b6ff631da430be182a[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Tue Feb 22 04:48:46 2022 +0000
+
+    add redirect
+
+[33mcommit 37cb26b732b745edc070952181f82defc8d5b05d[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Tue Feb 22 01:46:37 2022 +0000
+
+    install body-parser
+
+[33mcommit dcc9e3cd07a603fe1fc97af14d055ce2a81ce717[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Tue Feb 22 01:26:33 2022 +0000
+
+    add urls_new.ejs
+
+[33mcommit b32a55ba1fd4ba31f6de068b67f88f2e709b029a[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Tue Feb 22 00:29:11 2022 +0000
+
+    add _header
+
+[33mcommit 303128783ff47c1dbdfd4ca3ab52ece4382f08b3[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Tue Feb 22 00:22:08 2022 +0000
+
+    add urls_show.ejs
+
+[33mcommit 30479276d4b358dab3c32916fba191d2060a3739[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Tue Feb 22 00:16:47 2022 +0000
+
+    add urls_index.ejs
+
+[33mcommit 52dd9eb288591652219c128ce8387b67a8f319cc[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Tue Feb 22 00:04:22 2022 +0000
+
+    add ejs
+
+[33mcommit 5401c0d77541b2916e770b6998d31a9401123982[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Mon Feb 21 22:34:57 2022 +0000
+
+    add /hello GET request
+
+[33mcommit da752da924c2afdd1e6a4ba75562b356c4d4ca3c[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Mon Feb 21 22:31:24 2022 +0000
+
+    add /urls/json GET request
+
+[33mcommit 379b931d0801988682f1392c751fb2eb0d9676c9[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Mon Feb 21 22:29:04 2022 +0000
+
+    add express_server
+
+[33mcommit 07ea30ae069a7504acc75bb0385d2928989ebff6[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Mon Feb 21 22:15:08 2022 +0000
+
+    add express as a dependency and gitignore to ignore node_modules
+
+[33mcommit 60c9d6d11bd6c809f7dce1fa8409c35bb7e878ca[m
+Author: vagrant <tpirozzini@gmail.com>
+Date:   Mon Feb 21 22:13:12 2022 +0000
+
+    setup project

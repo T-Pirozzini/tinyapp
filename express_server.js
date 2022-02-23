@@ -4,7 +4,10 @@ const PORT = 8081; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser")
 
+// view engine
 app.set("view engine", "ejs");
+
+// middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -19,12 +22,26 @@ app.listen(PORT, () => {
 });
 
 // get cookies
-app.get('/', (req, res) => {
-  console.log('Cookies:', req.cookies)
-})
+// app.get('/set-cookies', (req, res) => {  
+//   res.cookie('newUser', false);
+//   res.cookie('isEmployee', true);
+//   res.send('You got the cookies!');
+// })
 
-// add login route
+// app.get('/read-cookies', (req, res) => {
+//   const cookies = req.cookies;
+//   console.log(cookies);
 
+//   res.json(cookies);
+// })
+
+
+// login post
+app.post("/login", (req, res) => {
+  const logID = req.body.username;
+  res.cookie("username", logID);  
+  res.redirect("/urls");
+});
 
 // parse json data
 app.get("/urls.json", (req, res) => {
@@ -33,7 +50,7 @@ app.get("/urls.json", (req, res) => {
 
 // render urls_index
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 });
 
@@ -44,7 +61,7 @@ app.get("/urls/new", (req, res) => {
 
 // render urls show
 app.get("/urls/:shortURL", (req, res) => {  
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
   res.render("urls_show", templateVars);
 });
 
@@ -57,8 +74,7 @@ app.get("/u/:shortURL", (req, res) => {
 // 
 app.post("/urls", (req, res) => {   
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = req.body.longURL 
-  // console.log(shortURL);  // Log the POST request body to the console
+  urlDatabase[shortURL] = req.body.longURL   
   res.redirect(`/urls/${shortURL}`);
 });
 
