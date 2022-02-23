@@ -21,26 +21,17 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-// get cookies
-// app.get('/set-cookies', (req, res) => {  
-//   res.cookie('newUser', false);
-//   res.cookie('isEmployee', true);
-//   res.send('You got the cookies!');
-// })
-
-// app.get('/read-cookies', (req, res) => {
-//   const cookies = req.cookies;
-//   console.log(cookies);
-
-//   res.json(cookies);
-// })
-
-
 // login post
 app.post("/login", (req, res) => {
   const logID = req.body.username;
   res.cookie("username", logID);  
   res.redirect("/urls");
+});
+
+// logout post
+app.post("/logout", (req, res) => {   
+  res.clearCookie("username", req.body.username);
+  res.redirect('/urls');
 });
 
 // parse json data
@@ -56,7 +47,8 @@ app.get("/urls", (req, res) => {
 
 // render urls_new
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = { username: req.cookies["username"] };
+  res.render("urls_new", templateVars);
 });
 
 // render urls show
