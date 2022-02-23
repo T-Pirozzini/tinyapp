@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const PORT = 8081; // default port 8080
+const port = 8081; // default port 8080
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser")
 
@@ -16,19 +16,19 @@ const urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
-// LISTENING ON PORT 8081
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+// listening on ${port}
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}!`);
 });
 
-// login post
+// login a user
 app.post("/login", (req, res) => {
   const logID = req.body.username;
   res.cookie("username", logID);  
   res.redirect("/urls");
 });
 
-// logout post
+// logout a user
 app.post("/logout", (req, res) => {   
   res.clearCookie("username", req.body.username);
   res.redirect('/urls');
@@ -80,9 +80,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // Edit a longURL
 app.post("/urls/:id", (req, res) => {
   const shortURL = req.params.id; // whatever the url is
-  const newLongURL= req.body.input;
+  const newLongURL = req.body.input;
   urlDatabase[shortURL] = newLongURL;
-  console.log("body", req.body) // displays input: URL  
+  //console.log("body", req.body) // displays input: URL  
   res.redirect(`/urls/${shortURL}`);
 });
 
