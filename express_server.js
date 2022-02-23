@@ -2,9 +2,11 @@ const express = require("express");
 const app = express();
 const PORT = 8081; // default port 8080
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser")
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -15,6 +17,14 @@ const urlDatabase = {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+// get cookies
+app.get('/', (req, res) => {
+  console.log('Cookies:', req.cookies)
+})
+
+// add login route
+
 
 // parse json data
 app.get("/urls.json", (req, res) => {
