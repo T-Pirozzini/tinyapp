@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const app = express();
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
+const cookieSession = require('cookie-session')
 // npm packages - NOT IN USE
 const cookieParser = require("cookie-parser");
 
@@ -19,10 +20,10 @@ app.set("view engine", "ejs");
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-// app.use(cookieSession({
-//   name: 'cookiemonster',
-//   keys: ['my secret key', 'yet another secret key']
-// })); 
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+})); 
 
 // URL database
 const urlDatabase = {
