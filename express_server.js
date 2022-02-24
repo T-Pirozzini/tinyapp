@@ -45,13 +45,19 @@ app.listen(port, () => {
 //   return { error: null, data: userDB[email] };
 // };
 
-// login a user
-app.post("/login", (req, res) => {  
-  const logID = req.body.username;
-  console.log(req.body.username);
-  res.cookie("username", logID);  
-  res.redirect("/urls");
+// login
+app.get("/login", (req, res) => {
+  const templateVars = { username: req.cookies["user_id"], email: req.cookies["user_email"] };
+  return res.render("urls_login", templateVars);
 });
+
+// login a user
+// app.post("/login", (req, res) => {  
+//   const logID = req.body.username;
+//   console.log(req.body.username);
+//   res.cookie("username", logID);  
+//   res.redirect("/urls");
+// });
 
 // logout a user
 app.post("/logout", (req, res) => {   
@@ -88,6 +94,7 @@ app.get("/register", (req, res) => {
   return res.render("urls_register", templateVars);
 });
 
+// helper function - registration
 const emailExists = (email, usersDB) => {
   for (let user in usersDB) {
     console.log(user);
@@ -122,8 +129,6 @@ app.post("/register", (req, res) => {
       return res.redirect("/urls");
     }  
 });
-
-
 
 // redirect to LongURL after clicking on shortURL
 app.get("/u/:shortURL", (req, res) => {     
