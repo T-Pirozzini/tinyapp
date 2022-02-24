@@ -1,39 +1,48 @@
+// npm packages
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
-const port = 8081; // default port 8080
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
-const e = require("express");
+const bcrypt = require('bcryptjs');
+// npm packages - NOT IN USE
+//const cookieParser = require("cookie-parser");
+
+// global constants
+const port = 8081; // default port 8080
+const hashedPassword = bcrypt.hashSync(password, 10);
 
 // view engine
 app.set("view engine", "ejs");
 
 // middleware
+app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+//app.use(cookieParser());
+app.use(cookieSession({
+  name: 'cookiemonster',
+  keys: ['my secret key', 'yet another secret key']
+})); 
 
 // Objects/Database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
 let users = {
-  "userRandomID": {
+  george: {
     id: "userRandomID", 
     email: "user@example.com", 
     password: "purple-monkey-dinosaur"
   },
- "user2RandomID": {
+  karen: {
     id: "user2RandomID", 
     email: "user2@example.com", 
     password: "dishwasher-funk"
   }
-}
+};
 
-// listening on ${port}
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}!`);
-});
+
 
 // render urls_login
 app.get("/login", (req, res) => {
@@ -63,7 +72,8 @@ app.post("/login", (req, res) => {
     console.log("Email doesn't exist");
     return res.status(403).send("Error 403: Email doesn't exist");
   };  
-  res.cookie("user_email", email)
+  bcrypt.compareSync("purple-monkey-dinosaur", hashedPassword); // returns true
+  bcrypt.compareSync("pink-donkey-minotaur", hashedPassword); // returns false
   res.redirect("/urls");
 });
 
@@ -146,7 +156,8 @@ app.post("/register", (req, res) => {
       console.log("You are already logged in!");
       res.status(400).send("Error 400: You are already logged in");
   } else {      
-      res.cookie("user_email", users[id].email); 
+      bcrypt.compareSync("purple-monkey-dinosaur", hashedPassword); // returns true
+      bcrypt.compareSync("pink-donkey-minotaur", hashedPassword); // returns false 
       return res.redirect("/urls");
     }  
 });
@@ -184,12 +195,7 @@ function generateRandomString() {
   return Math.random().toString(36).substring(2, 8); 
 };
 
-
-// EXAMPLE GET REQUESTS //
-// app.get("/", (req, res) => {
-//   res.send("Hello!");
-// });
-
-// app.get("/hello", (req, res) => {
-//   res.send("<html><body>Hello <b>World</b></body></html>\n");
-// });
+// listening on ${port}
+app.listen(port, () => {
+  console.log(`Example app listening on port ${port}!`);
+});
