@@ -45,19 +45,36 @@ app.listen(port, () => {
 //   return { error: null, data: userDB[email] };
 // };
 
-// login
+// render urls_login
 app.get("/login", (req, res) => {
-  const templateVars = { username: req.cookies["user_id"], email: req.cookies["user_email"] };
+  const templateVars = { email: req.cookies["user_email"] };
   return res.render("urls_login", templateVars);
 });
 
+const userExists = function(email, password) {
+  for(let key in users){
+    if(users[key].email === email && users[key].password === password) {
+      return key;
+    }    
+  }  
+}
+
 // login a user
-// app.post("/login", (req, res) => {  
-//   const logID = req.body.username;
-//   console.log(req.body.username);
-//   res.cookie("username", logID);  
-//   res.redirect("/urls");
-// });
+app.post("/login", (req, res) => {
+  const { email, password} = req.body
+  console.log("User", req.body)
+  const user = userExists(email, password)
+  if(!email|| !password) {
+    console.log("Enter an email and password");
+    return res.status(403).send("Error 403: Enter an email and password");
+  };
+  if(!user) {
+    console.log("Email doesn't exist");
+    return res.status(403).send("Error 403: Email doesn't exist");
+  };  
+  res.cookie("user_email", email)
+  res.redirect("/urls");
+});
 
 // logout a user
 app.post("/logout", (req, res) => {   
@@ -72,25 +89,25 @@ app.get("/urls.json", (req, res) => {
 
 // render urls_index
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, username: req.cookies["user_id"], email: req.cookies["user_email"] };
+  const templateVars = { urls: urlDatabase, email: req.cookies["user_email"] };
   res.render("urls_index", templateVars);
 });
 
 // render urls_new
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["user_id"], email: req.cookies["user_email"] };
+  const templateVars = { email: req.cookies["user_email"] };
   return res.render("urls_new", templateVars);
 });
 
 // render urls show
 app.get("/urls/:shortURL", (req, res) => {  
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["user_id"], email: req.cookies["user_email"] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], email: req.cookies["user_email"] };
   return res.render("urls_show", templateVars);
 });
 
 // register new user/render urls_registration
 app.get("/register", (req, res) => { 
-  const templateVars =  { username: req.cookies["user_id"], email: req.cookies["user_email"]};
+  const templateVars =  { email: req.cookies["user_email"]};
   return res.render("urls_register", templateVars);
 });
 
@@ -99,7 +116,7 @@ const emailExists = (email, usersDB) => {
   for (let user in usersDB) {
     console.log(user);
     if (user.email === email) {
-      return true;
+      return true; // return user id instead
     }
   }
   return false;
@@ -172,6 +189,3 @@ function generateRandomString() {
 // app.get("/hello", (req, res) => {
 //   res.send("<html><body>Hello <b>World</b></body></html>\n");
 // });
-
-
-
