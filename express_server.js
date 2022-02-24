@@ -5,10 +5,11 @@ const app = express();
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 // npm packages - NOT IN USE
-//const cookieParser = require("cookie-parser");
+const cookieParser = require("cookie-parser");
 
 // global constants
 const port = 8081; // default port 8080
+const password = "purple-monkey-dinosaur"; // found in the req.params object
 const hashedPassword = bcrypt.hashSync(password, 10);
 
 // view engine
@@ -17,11 +18,11 @@ app.set("view engine", "ejs");
 // middleware
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: true }));
-//app.use(cookieParser());
-app.use(cookieSession({
-  name: 'cookiemonster',
-  keys: ['my secret key', 'yet another secret key']
-})); 
+app.use(cookieParser());
+// app.use(cookieSession({
+//   name: 'cookiemonster',
+//   keys: ['my secret key', 'yet another secret key']
+// })); 
 
 // URL database
 const urlDatabase = {
@@ -64,19 +65,19 @@ app.get('/', (req, res) => {
 
 // render urls_index
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, email: req.cookies["user_email"] };
+  const templateVars = { urls: urlDatabase, user: req.cookies["user_email"] };
   res.render("urls_index", templateVars);
 });
 
 // render urls_new
 app.get("/urls/new", (req, res) => {
-  const templateVars = { email: req.cookies["user_email"] };
+  const templateVars = { user: req.cookies["user_email"] };
   return res.render("urls_new", templateVars);
 });
 
 // render urls show
 app.get("/urls/:shortURL", (req, res) => {  
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], email: req.cookies["user_email"] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: req.cookies["user_email"] };
   return res.render("urls_show", templateVars);
 });
 
@@ -88,13 +89,13 @@ app.get("/u/:shortURL", (req, res) => {
 
 // register new user/render urls_registration
 app.get("/register", (req, res) => { 
-  const templateVars =  { email: req.cookies["user_email"]};
+  const templateVars =  { user: req.cookies["user_email"]};
   return res.render("urls_register", templateVars);
 });
 
 // render urls_login
 app.get("/login", (req, res) => {
-  const templateVars = { email: req.cookies["user_email"] };
+  const templateVars = { user: req.cookies["user_email"] };
   return res.render("urls_login", templateVars);
 });
 
@@ -104,25 +105,24 @@ app.get("/login", (req, res) => {
 // register a user
 app.post("/register", (req, res) => {
   const id = generateRandomString();
-  const email = req.body.email;
+  const { email, password } = req.body;
   users[id] = {
     id,
     email,
-    password: req.body.password
-  }
+    password
+  };
   
   if (users[id].email === "") {           
-    console.log("An email is required");
+    //console.log("An email is required");
     res.status(400).send("Error 400: An email is required")
   } else if (users[id].password === '') {      
-    console.log("A password is required");
+    //console.log("A password is required");
     res.status(400).send("Error 400: A password is required");      
-  } else if (emailExists(email, users)) {     
-    console.log("You are already logged in!");
-    res.status(400).send("Error 400: You are already logged in");
-  } else {      
-    bcrypt.compareSync("purple-monkey-dinosaur", hashedPassword); // returns true
-    bcrypt.compareSync("pink-donkey-minotaur", hashedPassword); // returns false 
+  } else if (checkEmailRegistered(email, users)) {     
+    //console.log("The email is alaready registered");
+    res.status(400).send("Error 400: The email is already registered");    
+  } else {     
+    res.cookie("user_email", email) 
     return res.redirect("/urls");
   }  
 });
@@ -130,7 +130,7 @@ app.post("/register", (req, res) => {
 // login a user
 app.post("/login", (req, res) => {
   const { email, password} = req.body
-  console.log("User", req.body)
+  console.log("user", req.body)
   const user = userExists(email, password)
   if(!email|| !password) {
     console.log("Enter an email and password");
@@ -140,8 +140,7 @@ app.post("/login", (req, res) => {
     console.log("Email doesn't exist");
     return res.status(403).send("Error 403: Email doesn't exist");
   };  
-  bcrypt.compareSync("purple-monkey-dinosaur", hashedPassword); // returns true
-  bcrypt.compareSync("pink-donkey-minotaur", hashedPassword); // returns false
+  res.cookie("user_email", email)
   res.redirect("/urls");
 });
 
@@ -177,10 +176,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // HELPER FUNCTIONS //
 
 // check if email is registered
-const emailExists = (email, usersDB) => {
-  for (let user in usersDB) {
-    console.log(user);
-    if (user.email === email) {
+const checkEmailRegistered = (email, usersDB) => {
+  for (let user in usersDB) {  
+    if(usersDB[user].email === email) { 
       return true; 
     }
   }
