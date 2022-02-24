@@ -35,22 +35,13 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
 });
 
-// const authenticateUser = (email, password) => {
-//   if (!email) {
-//     return { error: "404", data: null };
-//   }
-//   if (email.password !== password) {
-//     return { error: "404", data: null };
-//   }
-//   return { error: null, data: userDB[email] };
-// };
-
 // render urls_login
 app.get("/login", (req, res) => {
   const templateVars = { email: req.cookies["user_email"] };
   return res.render("urls_login", templateVars);
 });
 
+// login helper function
 const userExists = function(email, password) {
   for(let key in users){
     if(users[key].email === email && users[key].password === password) {
@@ -80,6 +71,19 @@ app.post("/login", (req, res) => {
 app.post("/logout", (req, res) => {   
   res.clearCookie("user_email", req.body.email);
   res.redirect('/urls');
+});
+
+
+//NOT WORKING YET
+// current user redirect
+app.get('/', (req, res) => {
+  const user = req.cookies;
+  console.log(req.cookies);
+  if (!user) {
+    res.redirect('/login');
+  } else {
+    res.redirect('/urls');
+  }
 });
 
 // parse json data
@@ -116,7 +120,7 @@ const emailExists = (email, usersDB) => {
   for (let user in usersDB) {
     console.log(user);
     if (user.email === email) {
-      return true; // return user id instead
+      return true; 
     }
   }
   return false;
