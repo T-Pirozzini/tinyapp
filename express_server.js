@@ -23,12 +23,13 @@ app.use(cookieSession({
   keys: ['my secret key', 'yet another secret key']
 })); 
 
-// Objects/Database
+// URL database
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
+// USERS database
 let users = {
   george: {
     id: "userRandomID", 
@@ -42,7 +43,54 @@ let users = {
   }
 };
 
+// GET ROUTES //
 
+// parse json data
+app.get("/urls.json", (req, res) => {
+  res.json(urlDatabase);
+});
+
+//NOT WORKING YET
+// current user redirect
+app.get('/', (req, res) => {
+  const user = req.cookies;
+  console.log(req.cookies);
+  if (!user) {
+    res.redirect('/login');
+  } else {
+    res.redirect('/urls');
+  }
+});
+
+// render urls_index
+app.get("/urls", (req, res) => {
+  const templateVars = { urls: urlDatabase, email: req.cookies["user_email"] };
+  res.render("urls_index", templateVars);
+});
+
+// render urls_new
+app.get("/urls/new", (req, res) => {
+  const templateVars = { email: req.cookies["user_email"] };
+  return res.render("urls_new", templateVars);
+});
+
+// render urls show
+app.get("/urls/:shortURL", (req, res) => {  
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], email: req.cookies["user_email"] };
+  return res.render("urls_show", templateVars);
+});
+
+// redirect to LongURL after clicking on shortURL
+app.get("/u/:shortURL", (req, res) => {     
+  const longURL = urlDatabase[req.params.shortURL];  
+  res.redirect(longURL);  
+});
+
+// register new user/render urls_registration
+app.get("/register", (req, res) => { 
+  const templateVars =  { email: req.cookies["user_email"]};
+  return res.render("urls_register", templateVars);
+});
 
 // render urls_login
 app.get("/login", (req, res) => {
@@ -50,14 +98,34 @@ app.get("/login", (req, res) => {
   return res.render("urls_login", templateVars);
 });
 
-// login helper function
-const userExists = function(email, password) {
-  for(let key in users){
-    if(users[key].email === email && users[key].password === password) {
-      return key;
-    }    
+
+// POST ROUTES //
+
+// register a user
+app.post("/register", (req, res) => {
+  const id = generateRandomString();
+  const email = req.body.email;
+  users[id] = {
+    id,
+    email,
+    password: req.body.password
+  }
+  
+  if (users[id].email === "") {           
+    console.log("An email is required");
+    res.status(400).send("Error 400: An email is required")
+  } else if (users[id].password === '') {      
+    console.log("A password is required");
+    res.status(400).send("Error 400: A password is required");      
+  } else if (emailExists(email, users)) {     
+    console.log("You are already logged in!");
+    res.status(400).send("Error 400: You are already logged in");
+  } else {      
+    bcrypt.compareSync("purple-monkey-dinosaur", hashedPassword); // returns true
+    bcrypt.compareSync("pink-donkey-minotaur", hashedPassword); // returns false 
+    return res.redirect("/urls");
   }  
-}
+});
 
 // login a user
 app.post("/login", (req, res) => {
@@ -83,103 +151,11 @@ app.post("/logout", (req, res) => {
   res.redirect('/urls');
 });
 
-
-//NOT WORKING YET
-// current user redirect
-app.get('/', (req, res) => {
-  const user = req.cookies;
-  console.log(req.cookies);
-  if (!user) {
-    res.redirect('/login');
-  } else {
-    res.redirect('/urls');
-  }
-});
-
-// parse json data
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
-});
-
-// render urls_index
-app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, email: req.cookies["user_email"] };
-  res.render("urls_index", templateVars);
-});
-
-// render urls_new
-app.get("/urls/new", (req, res) => {
-  const templateVars = { email: req.cookies["user_email"] };
-  return res.render("urls_new", templateVars);
-});
-
-// render urls show
-app.get("/urls/:shortURL", (req, res) => {  
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], email: req.cookies["user_email"] };
-  return res.render("urls_show", templateVars);
-});
-
-// register new user/render urls_registration
-app.get("/register", (req, res) => { 
-  const templateVars =  { email: req.cookies["user_email"]};
-  return res.render("urls_register", templateVars);
-});
-
-// helper function - registration
-const emailExists = (email, usersDB) => {
-  for (let user in usersDB) {
-    console.log(user);
-    if (user.email === email) {
-      return true; 
-    }
-  }
-  return false;
-};
-
-// registration endpoint
-app.post("/register", (req, res) => {
-  const id = generateRandomString();
-  const email = req.body.email;
-  users[id] = {
-    id,
-    email,
-    password: req.body.password
-  }
-  
-  if (users[id].email === "") {           
-    console.log("An email is required");
-    res.status(400).send("Error 400: An email is required")
-  } else if (users[id].password === '') {      
-      console.log("A password is required");
-      res.status(400).send("Error 400: A password is required");      
-  } else if (emailExists(email, users)) {     
-      console.log("You are already logged in!");
-      res.status(400).send("Error 400: You are already logged in");
-  } else {      
-      bcrypt.compareSync("purple-monkey-dinosaur", hashedPassword); // returns true
-      bcrypt.compareSync("pink-donkey-minotaur", hashedPassword); // returns false 
-      return res.redirect("/urls");
-    }  
-});
-
-// redirect to LongURL after clicking on shortURL
-app.get("/u/:shortURL", (req, res) => {     
-  const longURL = urlDatabase[req.params.shortURL];  
-  res.redirect(longURL);  
-});
-
 // create shortURL - generate random ID
 app.post("/urls", (req, res) => {   
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL   
   res.redirect(`/urls/${shortURL}`);
-});
-
-// Delete a URL
-app.post("/urls/:shortURL/delete", (req, res) => {
-  const shortURL = req.params.shortURL;
-  delete urlDatabase[shortURL];
-  res.redirect("/urls");
 });
 
 // Edit a longURL
@@ -191,9 +167,39 @@ app.post("/urls/:id", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+// Delete a URL
+app.post("/urls/:shortURL/delete", (req, res) => {
+  const shortURL = req.params.shortURL;
+  delete urlDatabase[shortURL];
+  res.redirect("/urls");
+});
+
+// HELPER FUNCTIONS //
+
+// check if email is registered
+const emailExists = (email, usersDB) => {
+  for (let user in usersDB) {
+    console.log(user);
+    if (user.email === email) {
+      return true; 
+    }
+  }
+  return false;
+};
+
+// create random id
 function generateRandomString() {
   return Math.random().toString(36).substring(2, 8); 
 };
+
+// check is user is registered
+const userExists = function(email, password) {
+  for(let key in users){
+    if(users[key].email === email && users[key].password === password) {
+      return key;
+    }    
+  }  
+}
 
 // listening on ${port}
 app.listen(port, () => {
