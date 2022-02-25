@@ -14,8 +14,7 @@
             <h4>Logged in as: <em><%= email %></em></h4>            
             <button type="submit" class="btn-primary">Logout</button>
           </form>
-      <% } %>
-       <% if (!email) { %>
+      <% } else { %>
           <a class="nav-item nav-link" href="/register">Register</a>
           <a class="nav-item nav-link" href="/login">Already a User? Login</a>              
         <% } %>                    

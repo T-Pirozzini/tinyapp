@@ -10,8 +10,6 @@ const cookieParser = require("cookie-parser");
 
 // global constants
 const port = 8081; // default port 8080
-const password = "purple-monkey-dinosaur"; // found in the req.params object
-const hashedPassword = bcrypt.hashSync(password, 10);
 
 // view engine
 app.set("view engine", "ejs");
@@ -42,12 +40,12 @@ let users = {
   userRandomID: {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: "a"
   },
   user2RandomID: {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: "b"
   }
 };
 
@@ -70,64 +68,61 @@ app.get('/', (req, res) => {
   }
 });
 
-// render urls_index
-app.get("/urls", (req, res) => {  
-  const currentUserID = req.session.user_id;
-  const userData = gatherUserInfo(currentUserID, users); 
-  const templateVars = { urls: urlDatabase, id: userData.id, email: userData.email, password: userData.password };
-  res.render("urls_index", templateVars);
-});
 
-// render urls_new
-app.get("/urls/new", (req, res) => {  
-  const currentUserID = req.session.user_id;
-  const userData = gatherUserInfo(currentUserID, users); 
-  const templateVars = { userData };
-  if (!currentUserID){
-    return res.redirect("/login")
-  };
-  return res.render("urls_new", templateVars);
-});
 
 // render urls show
 app.get("/urls/:shortURL", (req, res) => { 
   const shortURL = req.params.shortURL;  
-  const longURL =  urlDatabase[req.params.shortURL].longURL;
+  const longURL =  urlDatabase[req.params.shortURL].longURL;  
   const currentUserID = req.session.user_id;
-  const userData = gatherUserInfo(currentUserID, users);  
-  const templateVars = { shortURL, longURL, id: userData.id, email: userData.email, password: userData.password };
+  const userData = gatherUserData(currentUserID, users);  
+  const templateVars = { shortURL, longURL, email: userData.email};
   return res.render("urls_show", templateVars);
 });
 
 // redirect to LongURL after clicking on shortURL
 app.get("/u/:shortURL", (req, res) => {     
-  const longURL = urlDatabase[req.params.shortURL].longURL;  
+  const longURL = urlDatabase[req.params.shortURL].longURL;    
   res.redirect(longURL);  
 });
 
 // register new user/render urls_registration
 app.get("/register", (req, res) => {
   const currentUserID = req.session.user_id;
-  const userData = gatherUserInfo(currentUserID, users); 
-  const templateVars =  { id: userData.id, email: userData.email, password: userData.password};
+  const userData = gatherUserData(currentUserID, users); 
+  const templateVars =  { id: userData.id, email: userData.email};
   return res.render("urls_register", templateVars);
 });
 
 // render urls_login
 app.get("/login", (req, res) => {
   const currentUserID = req.session.user_id;
-  const userData = gatherUserInfo(currentUserID, users); 
-  const templateVars =  { id: userData.id, email: userData.email, password: userData.password};
+  const userData = gatherUserData(currentUserID, users); 
+  const templateVars =  { id: userData.id, email: userData.email};
   return res.render("urls_login", templateVars);
 });
 
 
 // POST ROUTES //
 
+const isAuthenticated = (req, res, next) => {
+  // check if has cookie
+  if (req.session.user_id) {
+    console.log("user authenticated");
+    next()
+  } else {
+    res.redirect("/register");
+  }
+  // if has valid cookie 
+  // next()
+  // else
+  // redirect to somewhere or 401
+}
+
 // register a user
 app.post("/register", (req, res) => {
   const id = generateRandomString();
-  const email = req.body.email;
+  const { email, password } = req.body;
   const hashedPassword = bcrypt.hashSync(password, 10);  
   users[id] = {
     id,
@@ -135,44 +130,70 @@ app.post("/register", (req, res) => {
     password: hashedPassword
   };
   
-  if (users[id].email === "") {           
-    //console.log("An email is required");
-    res.status(400).send("Error 400: An email is required")
-  } else if (users[id].password === '') {      
-    //console.log("A password is required");
-    res.status(400).send("Error 400: A password is required");      
-  } else if (checkEmailRegistered(email, users)) {     
-    //console.log("The email is alaready registered");
-    res.status(400).send("Error 400: The email is already registered");    
-  } else {     
-    req.session.user_id = id; 
-    return res.redirect("/urls");
-  }  
+  if (!email) {        
+    return res.status(400).send("Error 400: An email is required")
+  }
+  if (!password) {      
+    return res.status(400).send("Error 400: A password is required");
+  }      
+  if (checkEmailRegistered(email, users)) {   
+    return res.status(400).send("Error 400: The email is already registered");    
+  }     
+  req.session.user_id = id; 
+  return res.redirect("/urls"); 
 });
 
 // login a user
 app.post("/login", (req, res) => {  
-  const { email, password} = req.body
-  const user = userExists(email, password)
-  const id = findUserID(user, password, users);
+  const { email, password } = req.body
   
-  if(!email|| !password) {
-    console.log("Enter an email and password");
-    return res.status(403).send("Error 403: Enter an email and password");
-  };
-  if(!user) {
-    console.log("Email doesn't exist");
-    return res.status(403).send("Error 403: Email doesn't exist");
-  };  
-  req.session.user_id = id;
+  // if(email)
+
+  // const user = findUserID(id, users);  
+  // console.log("user", user);
+  // if(!email) {
+  //   return res.status(401).send('No user with that username found');
+  // }
+
+  // bcrypt.compare(password, user.password)
+  //   .then((result) => {
+  //     if (result) {        
+  //       req.session.user_id = id;
+  //       res.redirect('/urls');
+  //     } else {
+  //       return res.status(401).send('Password incorrect');
+  //     }
   return res.redirect("/urls");
-});
+    });
+  // 
+
+//   if (!user) {
+//     console.log("Enter an email and password");
+//     return res.status(403).send("Error 403: Enter an email and password");
+//   } else {
+//     req.session.user_id = id;
+//     return res.redirect(301, '/urls');    
+//   }
+// });
+
+  // if(!email || !password) {
+  //   console.log("Enter an email and password");
+  //   return res.status(403).send("Error 403: Enter an email and password");
+  // };
+  // if(!user) {
+  //   console.log("Email doesn't exist");
+  //   return res.status(403).send("Error 403: Email doesn't exist");
+  // };  
+  // req.session.user_id = id;
+  // 
+//});
 
 // logout a user
 app.post("/logout", (req, res) => {   
   req.session = null;
   res.redirect('/urls');
 });
+
 
 // create shortURL - generate random ID
 app.post("/urls", (req, res) => {   
@@ -181,24 +202,19 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortURL] = {
     longURL: req.body.longURL,
     userID
-  };     
+  };
+  
+  urlsForUser(userID, users);
+  
   res.redirect(`/urls/${shortURL}`);
 });
 
 // Edit a longURL
 app.post("/urls/:id", (req, res) => {
-  // const shortURL = req.params.shortURL;
-  // res.redirect(`/urls/${shortURL}`);
-
-  const {id} = req.params;
-  const userID = req.session['user_id'];
-  const ownedURLs = urlsForUser(userID, urlDatabase);  
-  const templateVars = {
-    user: users[userID],
-    id,
-    url: urlDatabase[id]
-  };
-  res.render('urls_show', templateVars);
+  const shortURL = req.params.id;
+  const newLongURL = req.body.url;  
+  urlDatabase[shortURL].longURL =  newLongURL; 
+  res.redirect("/urls");
 });
 
 // Delete a URL
@@ -208,10 +224,32 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
+// AUTHENTICATED ROUTES
+app.use(isAuthenticated);
+// render urls_index
+app.get("/urls", (req, res) => {  
+  const currentUserID = req.session.user_id;
+  const userData = gatherUserData(currentUserID, users);
+  const urlData = gatherURLData(currentUserID, urlDatabase); 
+  const templateVars = { urls: urlDatabase, id: userData.id, email: userData.email };
+  return res.render("urls_index", templateVars);
+});
+
+// render urls_new
+app.get("/urls/new", (req, res) => {  
+  const currentUserID = req.session.user_id;
+  const userData = gatherUserData(currentUserID, users); 
+  const templateVars = { id: userData.id, email: userData.email };
+  if (!currentUserID){
+    return res.redirect("/login")
+  };
+  return res.render("urls_new", templateVars);
+});
+
 // HELPER FUNCTIONS //
 
-// gather all user info
-const gatherUserInfo = (currentUserID, usersDB) => {
+// gather all user data
+const gatherUserData = (currentUserID, usersDB) => {
   let empty = {};
   for (let user in usersDB) {
     if (users[user].id === currentUserID) {
@@ -221,10 +259,31 @@ const gatherUserInfo = (currentUserID, usersDB) => {
   return empty;
 };
 
+// gather URL data
+const gatherURLData = (id, urlDB) => {
+  let urls = {};
+  for (let url in urlDB) {
+    if (urlDB[url].userID === id) {
+      urls[url] = { longURL: urlDB[url].longURL, created: urlDB[url].created};
+    }
+  }
+  return urls;
+}  
+
+ // use bcrypt to compare/check passwords
+ const doesUserExist = (email, usersDatabase) => {
+  for (let key in usersDatabase) {
+    if(key === email) {      
+      return email;
+    }      
+  }
+  return false
+}
+
 // check if email is registered
-const checkEmailRegistered = (email, usersDB) => {
-  for (let user in usersDB) {  
-    if(usersDB[user].email === email) { 
+const checkEmailRegistered = (email, usersDatabase) => {
+  for (let user in usersDatabase) {  
+    if(usersDatabase[user].email === email) { 
       return false; 
     }
   }
@@ -237,27 +296,33 @@ function generateRandomString() {
 };
 
 // check is user is registered
-const userExists = function(email, password) {
-  for(let key in users){
-    if(users[key].email === email && users[key].password === password) {
-      return key;
-    }    
-  }  
-}
+// const userExists = function(email, password) {
+//   for(let key in users){
+//     if(users[key].email === email && users[key].password === password) {
+//       return key;
+//     }    
+//   }  
+// }
 
-const findUserID = (username, password, users) => {
-  for (let nameInDB in users) {
-    if (nameInDB === username) {
-      const comparePasswords = bcrypt.compareSync(password, users[nameInDB].password);
-      if (comparePasswords) {
-        return users[nameInDB].id;
-      }
+
+
+// return the URLS where the userID is equal to the id of the currently logged-in User
+// NOT WORKING
+const urlsForUser = function (id, obj) {
+  for (let key in obj) {
+    console.log("this is the key",key)
+    console.log("userID",obj[key].userID)
+    if (obj[key].userID === id) {
+      return obj[key].longURL
     }
   }
-  return false;
-};
+}
+
+
 
 // listening on ${port}
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
 });
+
+
