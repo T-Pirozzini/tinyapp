@@ -1,5 +1,3 @@
-//const { users } = require("./express_server") 
-
 const urlsForUser = (userId, urlDatabase) => {
   let userUrls = {};  
   for (let shortUrl in urlDatabase) {    
@@ -42,4 +40,3 @@ module.exports = {
   gatherUserData,
   urlsForUser
 };
-

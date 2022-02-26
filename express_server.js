@@ -4,12 +4,11 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
-// npm packages - NOT IN USE
 // const cookieParser = require("cookie-parser");
 
 // global constants
 const app = express();
-const port = 8081; // default port 8080
+const port = 8082
 const { generateRandomString, gatherUserData, getUserByEmail,urlsForUser } = require("./helpers")
 
 // view engine
@@ -229,10 +228,3 @@ app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
 });
 
-
-module.exports = {
-
-   users,
-
-
-};
