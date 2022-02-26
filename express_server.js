@@ -29,7 +29,8 @@ function generateRandomString() {
 };
 
 const getUserByEmail= (email, usersDatabase) => {
-  for (user in usersDatabase) {
+  for (const user in usersDatabase) {
+    console.log(user);
     if (email === usersDatabase[user].email) {
       return usersDatabase[user];
     }
@@ -41,11 +42,11 @@ const getUserByEmail= (email, usersDatabase) => {
 const urlDatabase = {
   b6UTxQ: {
       longURL: "https://www.tsn.ca",
-      userID: "aJ48lW",
+      user_id: "aJ48lW",
   },
   i3BoGr: {
       longURL: "https://www.google.ca",
-      userID: "aJ48lW",
+      user_id: "aJ48lW",
   }  
 };
 
@@ -61,7 +62,7 @@ app.get("/urls.json", (req, res) => {
 
 // current user redirect
 // app.get('/', (req, res) => {
-//   const currentUser = req.session.userId;  
+//   const currentUser = req.session.user_id;  
 //   // if (req.session.user_id) {
 //   //   res.redirect('/urls');
 //   // } else {
@@ -74,50 +75,73 @@ app.get("/urls.json", (req, res) => {
 
 // render urls_login
 app.get("/login", (req, res) => {
-  const currentUser = req.session.userId;
-  const user = users[currentUser];
+  const currentUser = req.session.user_id;  
 
-  const userData = gatherUserData(user, users); 
-  const templateVars =  { user, id: userData.id, email: userData.email};
+  const userData = gatherUserData(currentUser, users); 
+  const templateVars =  { currentUser, id: userData.id, email: userData.email};
 
   return res.render("urls_login", templateVars);
 });
 
 // register new user/render urls_registration
 app.get("/register", (req, res) => {
-  const currentUser = req.session.userId;
-  const user = users[currentUser];
+  const currentUser = req.session.user_id;  
 
-  const userData = gatherUserData(user, users); 
-  const templateVars =  { user, id: userData.id, email: userData.email};
+  const userData = gatherUserData(currentUser, users); 
+  const templateVars =  { currentUser, id: userData.id, email: userData.email};
   return res.render("urls_register", templateVars);
 });
 
 // render urls_index
 app.get("/urls", (req, res) => {  
-  const currentUser = req.session.userId;
-  const user = users[currentUser];
+  const currentUser = req.session.user_id;    
 
-  const userData = gatherUserData(user, users);
-  const urlData = gatherURLData(user, urlDatabase); 
+  const userData = gatherUserData(currentUser, users);
+  const urlData = gatherURLData(currentUser, urlDatabase); 
 
-  const templateVars = { user, urls: urlDatabase, id: userData.id, email: userData.email };
+  const templateVars = { currentUser, urls: urlDatabase, id: userData.id, email: userData.email };
 
   return res.render("urls_index", templateVars);
 });
 
 // render urls_new
 app.get("/urls/new", (req, res) => {  
-  const currentUser = req.session.userId;
-  const user = users[currentUser];
+  const currentUser = req.session.user_id;  
 
-  const userData = gatherUserData(user, users); 
-  const templateVars = { user, id: userData.id, email: userData.email };
+  const userData = gatherUserData(currentUser, users); 
+  const templateVars = { currentUser, id: userData.id, email: userData.email };
   if (!currentUser){
     return res.redirect("/login")
   };
   return res.render("urls_new", templateVars);
 });
+
+// GET REQUEST
+// return the URLS where the user_id is equal to the id of the currently logged-in User
+// NOT WORKING
+// const urlsForUser = function (user, usersDatabase) {  
+//   for (const [key, value] of Object.entries(usersDatabase)){    
+//     if (value === user)
+//     console.log("urlsForUser", "true")
+//       return true;
+//   }
+//   console.log("No Match");
+// }
+
+// move to GET
+// if (currentUser) {    
+//   if(urlsForUser(currentUser, users)){
+//     console.log("user ID matches") // returns urls for specific user
+    
+//     }
+//   }
+// Urls for user - loop through
+// add only urls with is that = current user id
+
+// dont need user details
+// start with user id
+// match user id 
+// return all urls = to current users ID
 
 // redirect to LongURL after clicking on shortURL
 app.get("/u/:shortURL", (req, res) => {     
@@ -127,28 +151,18 @@ app.get("/u/:shortURL", (req, res) => {
 
 // render urls show
 app.get("/urls/:shortURL", (req, res) => { 
-  const currentUser = req.session.userId;
-  const user = users[currentUser];
+  const currentUser = req.session.user_id;  
 
   const shortURL = req.params.shortURL;  
   const longURL = urlDatabase[req.params.shortURL].longURL;  
   
-  const userData = gatherUserData(user, users);  
-  const templateVars = { user, shortURL, longURL, email: userData.email};
+  const userData = gatherUserData(currentUser, users);  
+  const templateVars = { currentUser, shortURL, longURL, email: userData.email};
   return res.render("urls_show", templateVars);
 });
 
 
 // POST ROUTES //
-const isAuthenticated = (req, res, next) => {
-  // check if user has cookie  
-  if (req.session.userId) {
-    console.log("user authenticated");
-    next()
-  } else {
-    res.redirect("/login");
-  }  
-}
 
 // register a user
 app.post("/register", (req, res) => {  
@@ -177,26 +191,12 @@ app.post("/register", (req, res) => {
     password: hashedPassword
   };
 
-  users[id] = newUser;
+  users[newUser.email] = newUser;
   console.log(newUser);
   
-  req.session.userId = newUser.id;
+  req.session.user_id = newUser.id;
   res.redirect('/urls'); 
 });
-
-// check if email is registered
-const checkIfRegistered = (email, password, usersDatabase) => {
-  for (let user in usersDatabase) {  
-    if(usersDatabase[user].email === email) { 
-      console.log('email matches')           
-      bcrypt.compareSync(usersDatabase[user].password, password);
-      console.log('password matches')
-        return true; 
-      }      
-    }
-    console.log('false'); 
-  return false;
-} 
   
 // login a user
 app.post("/login", (req, res) => {  
@@ -217,7 +217,7 @@ app.post("/login", (req, res) => {
     return res.send('Error: Passwords do not match');
   }
 
-  req.session.userId = user.id
+  req.session.user_id = user.id
   res.redirect('/urls');  
 });  
 
@@ -229,26 +229,29 @@ app.post("/logout", (req, res) => {
 
 // create shortURL - generate random ID
 app.post("/urls", (req, res) => {   
-  const currentUser = req.session.userId;   
-  const user = users[currentUser];
+  const currentUser = req.session.user_id; 
+  console.log("User", currentUser)
+  console.log("all users", users)
 
   const shortURL = generateRandomString(); 
-  
-  urlDatabase[shortURL] = {
-    longURL: req.body.longURL,
-    userID
-  };
-  
-  urlsForUser(user);
-  
+
+    urlDatabase[shortURL] = {
+      longURL: req.body.longURL,
+      currentUser
+  }   
   res.redirect(`/urls/${shortURL}`);
 });
 
 // Edit a longURL
 app.post("/urls/:id", (req, res) => {
+  const currentUser = req.session.user_id;
   const shortURL = req.params.id;
-  const newLongURL = req.body.url;  
-  urlDatabase[shortURL].longURL =  newLongURL; 
+  const newLongURL = req.body.url;
+
+  if(currentUser){  
+    urlDatabase[shortURL].longURL =  newLongURL; 
+  }
+
   res.redirect("/urls");
 });
 
@@ -263,10 +266,10 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 // HELPER FUNCTIONS //
 
 // gather all user data
-const gatherUserData = (currentUserID, usersDB) => {
+const gatherUserData = (currentuser_id, usersDB) => {
   let empty = {};
   for (let user in usersDB) {
-    if (users[user].id === currentUserID) {
+    if (users[user].id === currentuser_id) {
       return users[user];
     }
   }
@@ -277,14 +280,26 @@ const gatherUserData = (currentUserID, usersDB) => {
 const gatherURLData = (id, urlDB) => {
   let urls = {};
   for (let url in urlDB) {
-    if (urlDB[url].userID === id) {
+    if (urlDB[url].user_id === id) {
       urls[url] = { longURL: urlDB[url].longURL, created: urlDB[url].created};
     }
   }
   return urls;
 }  
 
- 
+ // check if email is registered
+const checkIfRegistered = (email, password, usersDatabase) => {
+  for (let user in usersDatabase) {  
+    if(usersDatabase[user].email === email) { 
+      console.log('email matches')           
+      bcrypt.compareSync(usersDatabase[user].password, password);
+      console.log('password matches')
+        return true; 
+      }      
+    }
+    console.log('false'); 
+  return false;
+} 
 
 
 
@@ -297,19 +312,17 @@ const gatherURLData = (id, urlDB) => {
 //   }  
 // }
 
-
-
-// return the URLS where the userID is equal to the id of the currently logged-in User
-// NOT WORKING
-const urlsForUser = function (id, obj) {
-  for (let key in obj) {
-    console.log("this is the key",key)
-    console.log("userID",obj[key].userID)
-    if (obj[key].userID === id) {
-      return obj[key].longURL
-    }
-  }
+const isAuthenticated = (req, res, next) => {
+  // check if user has cookie  
+  if (req.session.user_id) {
+    console.log("user authenticated");
+    next()
+  } else {
+    res.redirect("/login");
+  }  
 }
+
+
 
 
 
