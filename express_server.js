@@ -10,6 +10,7 @@ const cookieSession = require('cookie-session');
 // global constants
 const app = express();
 const port = 8081; // default port 8080
+const { generateRandomString, gatherUserData, getUserByEmail,urlsForUser } = require("./helpers")
 
 // view engine
 app.set("view engine", "ejs");
@@ -22,41 +23,6 @@ app.use(cookieSession({
   keys: ['key1', 'key2'] // must be a string and atleast one
 })); 
 // app.use(cookieParser());
-
-// helper functions
-function generateRandomString() {
-  return Math.random().toString(36).substring(2, 8); 
-};
-
-const getUserByEmail= (email, usersDatabase) => {
-  for (const user in usersDatabase) {
-    console.log(user);
-    if (email === usersDatabase[user].email) {
-      return usersDatabase[user];
-    }
-  }
-  return null;
-};
-
-const gatherUserData = (currentuser_id, usersDB) => {
-  let empty = {};
-  for (let user in usersDB) {
-    if (users[user].id === currentuser_id) {
-      return users[user];
-    }
-  }
-  return empty;
-};
-
-const urlsForUser = (userId, urlDatabase) => {
-  let userUrls = {};  
-  for (let shortUrl in urlDatabase) {    
-    if (urlDatabase[shortUrl].user_id === userId) {      
-      userUrls[shortUrl] = urlDatabase[shortUrl];      
-    }
-  }  
-  return userUrls;
-}; 
 
 // URL database
 const urlDatabase = {
@@ -258,55 +224,15 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-
-// HELPER FUNCTIONS //
-
-
-
- 
-
- // check if email is registered
-const checkIfRegistered = (email, password, usersDatabase) => {
-  for (let user in usersDatabase) {  
-    if(usersDatabase[user].email === email) { 
-      console.log('email matches')           
-      bcrypt.compareSync(usersDatabase[user].password, password);
-      console.log('password matches')
-        return true; 
-      }      
-    }
-    console.log('false'); 
-  return false;
-} 
-
-
-
-// check is user is registered
-// const userExists = function(email, password) {
-//   for(let key in users){
-//     if(users[key].email === email && users[key].password === password) {
-//       return key;
-//     }    
-//   }  
-// }
-
-const isAuthenticated = (req, res, next) => {
-  // check if user has cookie  
-  if (req.session.user_id) {
-    console.log("user authenticated");
-    next()
-  } else {
-    res.redirect("/login");
-  }  
-}
-
-
-
-
-
 // listening on ${port}
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}!`);
 });
 
 
+module.exports = {
+
+   users,
+
+
+};
