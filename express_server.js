@@ -38,6 +38,16 @@ const getUserByEmail= (email, usersDatabase) => {
   return null;
 };
 
+const gatherUserData = (currentuser_id, usersDB) => {
+  let empty = {};
+  for (let user in usersDB) {
+    if (users[user].id === currentuser_id) {
+      return users[user];
+    }
+  }
+  return empty;
+};
+
 // URL database
 const urlDatabase = {
   b6UTxQ: {
@@ -92,14 +102,38 @@ app.get("/register", (req, res) => {
   return res.render("urls_register", templateVars);
 });
 
+
+const urlsForUser = (userId, urlDatabase) => {
+  let userUrls = {};
+  console.log("UserID", userId)
+  for (let shortUrl in urlDatabase) {
+    console.log("shortUrls", shortUrl)
+    console.log("URL ID", urlDatabase[shortUrl].user_id)
+    console.log("userId", userId)
+    if (urlDatabase[shortUrl].user_id === userId) {
+      console.log("enter")
+      userUrls[shortUrl] = urlDatabase[shortUrl];      
+    }
+  }
+  console.log("User URLS", userUrls)
+  return userUrls;
+}; 
+
+
 // render urls_index
 app.get("/urls", (req, res) => {  
-  const currentUser = req.session.user_id;    
+  const currentUser = req.session.user_id; 
 
+  if (!currentUser) {
+    console.log("You are not logged in!");
+    // res.send("Log in to access your URLS");    
+  };
+
+  const userUrls = urlsForUser(currentUser, urlDatabase)
+    
   const userData = gatherUserData(currentUser, users);
-  const urlData = gatherURLData(currentUser, urlDatabase); 
-
-  const templateVars = { currentUser, urls: urlDatabase, id: userData.id, email: userData.email };
+  
+  const templateVars = { currentUser, urlDatabase: userUrls, id: userData.id, email: userData.email };
 
   return res.render("urls_index", templateVars);
 });
@@ -108,40 +142,14 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {  
   const currentUser = req.session.user_id;  
 
-  const userData = gatherUserData(currentUser, users); 
+  const userData = gatherUserData(currentUser, users);
+  const urlData = urlsForUser(currentUser, urlDatabase);  
   const templateVars = { currentUser, id: userData.id, email: userData.email };
   if (!currentUser){
     return res.redirect("/login")
   };
   return res.render("urls_new", templateVars);
 });
-
-// GET REQUEST
-// return the URLS where the user_id is equal to the id of the currently logged-in User
-// NOT WORKING
-// const urlsForUser = function (user, usersDatabase) {  
-//   for (const [key, value] of Object.entries(usersDatabase)){    
-//     if (value === user)
-//     console.log("urlsForUser", "true")
-//       return true;
-//   }
-//   console.log("No Match");
-// }
-
-// move to GET
-// if (currentUser) {    
-//   if(urlsForUser(currentUser, users)){
-//     console.log("user ID matches") // returns urls for specific user
-    
-//     }
-//   }
-// Urls for user - loop through
-// add only urls with is that = current user id
-
-// dont need user details
-// start with user id
-// match user id 
-// return all urls = to current users ID
 
 // redirect to LongURL after clicking on shortURL
 app.get("/u/:shortURL", (req, res) => {     
@@ -237,8 +245,9 @@ app.post("/urls", (req, res) => {
 
     urlDatabase[shortURL] = {
       longURL: req.body.longURL,
-      currentUser
+      user_id: currentUser
   }   
+  console.log(currentUser);
   res.redirect(`/urls/${shortURL}`);
 });
 
@@ -265,27 +274,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 
 // HELPER FUNCTIONS //
 
-// gather all user data
-const gatherUserData = (currentuser_id, usersDB) => {
-  let empty = {};
-  for (let user in usersDB) {
-    if (users[user].id === currentuser_id) {
-      return users[user];
-    }
-  }
-  return empty;
-};
 
-// gather URL data
-const gatherURLData = (id, urlDB) => {
-  let urls = {};
-  for (let url in urlDB) {
-    if (urlDB[url].user_id === id) {
-      urls[url] = { longURL: urlDB[url].longURL, created: urlDB[url].created};
-    }
-  }
-  return urls;
-}  
+
+ 
 
  // check if email is registered
 const checkIfRegistered = (email, password, usersDatabase) => {
