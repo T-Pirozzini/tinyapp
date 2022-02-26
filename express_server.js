@@ -48,6 +48,16 @@ const gatherUserData = (currentuser_id, usersDB) => {
   return empty;
 };
 
+const urlsForUser = (userId, urlDatabase) => {
+  let userUrls = {};  
+  for (let shortUrl in urlDatabase) {    
+    if (urlDatabase[shortUrl].user_id === userId) {      
+      userUrls[shortUrl] = urlDatabase[shortUrl];      
+    }
+  }  
+  return userUrls;
+}; 
+
 // URL database
 const urlDatabase = {
   b6UTxQ: {
@@ -69,21 +79,18 @@ app.get("/urls.json", (req, res) => {
 });
 
 // GET ROUTES //
+app.get('/', (req, res) => {
+  const currentUser = req.session.user_id;  
+  
+  const templateVars = { currentUser };
 
-// current user redirect
-// app.get('/', (req, res) => {
-//   const currentUser = req.session.user_id;  
-//   // if (req.session.user_id) {
-//   //   res.redirect('/urls');
-//   // } else {
-//   //   res.redirect('/login');
-//   // }
-//   const templateVars = { currentUser };
+  if (!currentUser) {
+    return res.render("urls_register", templateVars);    
+  };  
 
-//   res.render('urls_index', templateVars)
-// });
+  res.render('urls_index', templateVars)
+});
 
-// render urls_login
 app.get("/login", (req, res) => {
   const currentUser = req.session.user_id;  
 
@@ -93,7 +100,6 @@ app.get("/login", (req, res) => {
   return res.render("urls_login", templateVars);
 });
 
-// register new user/render urls_registration
 app.get("/register", (req, res) => {
   const currentUser = req.session.user_id;  
 
@@ -103,37 +109,16 @@ app.get("/register", (req, res) => {
 });
 
 
-const urlsForUser = (userId, urlDatabase) => {
-  let userUrls = {};
-  console.log("UserID", userId)
-  for (let shortUrl in urlDatabase) {
-    console.log("shortUrls", shortUrl)
-    console.log("URL ID", urlDatabase[shortUrl].user_id)
-    console.log("userId", userId)
-    if (urlDatabase[shortUrl].user_id === userId) {
-      console.log("enter")
-      userUrls[shortUrl] = urlDatabase[shortUrl];      
-    }
-  }
-  console.log("User URLS", userUrls)
-  return userUrls;
-}; 
-
-
-// render urls_index
 app.get("/urls", (req, res) => {  
   const currentUser = req.session.user_id; 
 
-  if (!currentUser) {
-    console.log("You are not logged in!");
-    // res.send("Log in to access your URLS");    
-  };
-
-  const userUrls = urlsForUser(currentUser, urlDatabase)
-    
-  const userData = gatherUserData(currentUser, users);
-  
+  const userUrls = urlsForUser(currentUser, urlDatabase)    
+  const userData = gatherUserData(currentUser, users);  
   const templateVars = { currentUser, urlDatabase: userUrls, id: userData.id, email: userData.email };
+  
+  if (!currentUser) {
+    return res.render("urls_register", templateVars);    
+  };
 
   return res.render("urls_index", templateVars);
 });
@@ -145,9 +130,11 @@ app.get("/urls/new", (req, res) => {
   const userData = gatherUserData(currentUser, users);
   const urlData = urlsForUser(currentUser, urlDatabase);  
   const templateVars = { currentUser, id: userData.id, email: userData.email };
-  if (!currentUser){
-    return res.redirect("/login")
-  };
+  if (!currentUser) {
+    console.log("You are not logged in!");
+    // res.send("Log in to access your URLS");
+    return res.render("urls_error", templateVars);    
+  };  
   return res.render("urls_new", templateVars);
 });
 
