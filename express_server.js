@@ -83,7 +83,7 @@ app.get("/urls", (req, res) => {
   const templateVars = { currentUser, urlDatabase: userUrls, id: userData.id, email: userData.email };
   
   if (!currentUser) {
-    return res.render("urls_register", templateVars);    
+    return res.render("urls_login", templateVars);    
   };
 
   return res.render("urls_index", templateVars);
@@ -185,7 +185,7 @@ app.post("/login", (req, res) => {
 // logout a user
 app.post("/logout", (req, res) => {    
   req.session = null;
-  res.redirect('/urls');
+  res.redirect('/login');
 });
 
 // create shortURL - generate random ID
