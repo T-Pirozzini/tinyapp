@@ -4,7 +4,6 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
 const cookieSession = require('cookie-session');
-// const cookieParser = require("cookie-parser");
 
 // global constants
 const app = express();
@@ -19,9 +18,8 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieSession({
   name: 'session',
-  keys: ['key1', 'key2'] // must be a string and atleast one
+  keys: ['key1', 'key2']
 })); 
-// app.use(cookieParser());
 
 // URL database
 const urlDatabase = {
