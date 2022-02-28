@@ -47,7 +47,7 @@ app.get('/', (req, res) => {
   const templateVars = { currentUser };
 
   if (!currentUser) {
-    return res.render("urls_register", templateVars);    
+    return res.render("urls_login", templateVars);    
   };  
 
   res.render('urls_index', templateVars)
@@ -76,7 +76,7 @@ app.get("/urls", (req, res) => {
   const templateVars = { currentUser, urlDatabase: userUrls, id: userData.id, email: userData.email };
   
   if (!currentUser) {
-    return res.render("urls_login", templateVars);    
+    return res.render("urls_error", templateVars);    
   };
 
   return res.render("urls_index", templateVars);
@@ -88,7 +88,7 @@ app.get("/urls/new", (req, res) => {
   const templateVars = { currentUser, id: userData.id, email: userData.email };
 
   if (!currentUser) {        
-    return res.render("urls_error", templateVars);    
+    return res.render("urls_login", templateVars);    
   };
 
   return res.render("urls_new", templateVars);
@@ -96,8 +96,13 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/u/:shortURL", (req, res) => {     
   const longURL = urlDatabase[req.params.shortURL].longURL;
+  const templateVars = longURL;
 
-  res.redirect(longURL);  
+  if (!currentUser) {
+    return res.send('Error: That URL does not belong to you'); 
+  }
+
+  res.redirect(longURL, templateVars);  
 });
 
 app.get("/urls/:shortURL", (req, res) => { 
@@ -106,6 +111,10 @@ app.get("/urls/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL].longURL;  
   const userData = gatherUserData(currentUser, users);  
   const templateVars = { currentUser, shortURL, longURL, email: userData.email};
+
+  if (!currentUser) {    
+    return res.send('Error: That URL does not belong to you'); 
+  }
 
   return res.render("urls_show", templateVars);
 });
@@ -196,7 +205,11 @@ app.post("/urls/:id", (req, res) => {
 
 // Delete a URL
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const currentUser = req.session.user_id;
   const shortURL = req.params.shortURL;
+  if (!currentUser) {
+    return res.send('Error: That URL does not belong to you');    
+  }
   
   delete urlDatabase[shortURL];
   res.redirect("/urls");
