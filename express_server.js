@@ -87,8 +87,7 @@ app.get("/urls/new", (req, res) => {
   const userData = gatherUserData(currentUser, users);    
   const templateVars = { currentUser, id: userData.id, email: userData.email };
 
-  if (!currentUser) {
-    console.log("You are not logged in!");    
+  if (!currentUser) {        
     return res.render("urls_error", templateVars);    
   };
 
