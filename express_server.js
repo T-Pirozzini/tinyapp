@@ -50,7 +50,7 @@ app.get('/', (req, res) => {
     return res.render("urls_login", templateVars);    
   };  
 
-  res.render('urls_index', templateVars)
+  res.render('urls_index', templateVars);
 });
 
 app.get("/login", (req, res) => {
@@ -100,7 +100,7 @@ app.get("/u/:shortURL", (req, res) => {
 
   if (!currentUser) {
     return res.send('Error: That URL does not belong to you'); 
-  }
+  };
 
   res.redirect(longURL, templateVars);  
 });
@@ -108,13 +108,13 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => { 
   const currentUser = req.session.user_id;
   const shortURL = req.params.shortURL;  
-  const longURL = urlDatabase[req.params.shortURL].longURL;  
+  const longURL = urlDatabase[req.params.shortURL].longURL;    
   const userData = gatherUserData(currentUser, users);  
   const templateVars = { currentUser, shortURL, longURL, email: userData.email};
 
   if (!currentUser) {    
     return res.send('Error: That URL does not belong to you'); 
-  }
+  };
 
   return res.render("urls_show", templateVars);
 });
@@ -155,18 +155,18 @@ app.post("/login", (req, res) => {
 
   if (!email) {
     return res.send('Error: Please enter an email');
-  }
+  };
   if (!password) {
     return res.send('Error: Please enter a password');
-  }
+  };
   const user = getUserByEmail(email, users); 
   if (!user) {
     return res.send('Error: user does not exist');
-  }
+  };
   const result = bcrypt.compareSync(password, user.password);
   if (!result) {
     return res.send('Error: Passwords do not match');
-  }
+  };
 
   req.session.user_id = user.id;
   res.redirect('/urls');  
@@ -209,7 +209,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   if (!currentUser) {
     return res.send('Error: That URL does not belong to you');    
-  }
+  };
   
   delete urlDatabase[shortURL];
   res.redirect("/urls");
